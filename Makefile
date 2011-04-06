@@ -34,25 +34,13 @@ test-visuals: dirs $(UTILS_SRC) $(COLOR_SRC) $(VISUALS_SRC) test_visuals.c
 	gcc -g -Wall -o ./out/test/visuals -DCPU $(VISUALS_LIB) $(UTILS_SRC_C) $(COLOR_SRC_C) $(VISUALS_SRC_C) test_visuals.c
 	valgrind --leak-check=full ./out/test/visuals
 
-dist-static: dirs $(SRC)
-	mkdir -p ./out/dist/static
-	gcc -g -Wall -c -o ./out/tmp/utils.o -DCPU $(UTILS_SRC_C)
-	gcc -g -Wall -c -o ./out/tmp/color.o -DCPU $(COLOR_SRC_C)
-	gcc -g -Wall -c -o ./out/tmp/image.o -DCPU $(IMAGE_SRC_C)
-	gcc -g -Wall -c -o ./out/tmp/visuals.o -DCPU $(VISUALS_LIB) $(VISUALS_SRC_C)
-	ar rcs ./out/dist/static/libsnt.a ./out/tmp/utils.o ./out/tmp/color.o ./out/tmp/image.o ./out/tmp/visuals.o
-	cp utils.h ./out/dist/static
-	cp color.h ./out/dist/static
-	cp image.h ./out/dist/static
-	cp visuals.h ./out/dist/static
-
-dist-shared: dirs $(SRC)
-	mkdir -p ./out/dist/shared
-	gcc -g -Wall -shared -Wl,-soname,libmean.so.1 -o ./out/dist/shared/libmean.so.1.0.0 $(LIB) $(SRC)
-	cp utils.h ./out/dist/shared
-	cp color.h ./out/dist/shared
-	cp image.h ./out/dist/shared
-	cp visuals.h ./out/dist/shared
+dist: dirs $(SRC)
+	mkdir -p ./out/dist
+	gcc -g -Wall -shared -Wl,-soname,libsnt.so -o ./out/dist/libsnt.so $(LIB) $(SRC)
+	cp utils.h ./out/dist
+	cp color.h ./out/dist
+	cp image.h ./out/dist
+	cp visuals.h ./out/dist
 
 dirs:
 	mkdir -p ./out
