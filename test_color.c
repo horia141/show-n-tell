@@ -9,81 +9,81 @@ main(
   char** argv)
 {
   {
-    color  a;
+    color  c;
 
-    a = color_rgb(0,0.5,0.77);
+    c = color_rgb(0,0.5,0.77);
 
-    assert(a.r == 0.0f);
-    assert(a.g == 0.5f);
-    assert(a.b == 0.77f);
-    assert(a.a == 1.0f);
+    assert(c.r == 0.0f);
+    assert(c.g == 0.5f);
+    assert(c.b == 0.77f);
+    assert(c.a == 1.0f);
   }
 
   {
-    color  a;
+    color  c;
 
-    a = color_rgba(0,0.23,0.71,0.44);
+    c = color_rgba(0,0.23,0.71,0.44);
 
-    assert(a.r == 0.0f);
-    assert(a.g == 0.23f);
-    assert(a.b == 0.71f);
-    assert(a.a == 0.44f);
+    assert(c.r == 0.0f);
+    assert(c.g == 0.23f);
+    assert(c.b == 0.71f);
+    assert(c.a == 0.44f);
   }
 
   {
-    color  a;
+    color  c;
 
-    a = color_rgba(0,0.11,0.73,0.88);
+    c = color_rgba(0,0.11,0.73,0.88);
 
-    assert(color_is_valid(&a) == true);
+    assert(color_is_valid(&c) == true);
 
-    a.r = 1.01;
-    assert(color_is_valid(&a) == false);
+    c.r = 1.01;
+    assert(color_is_valid(&c) == false);
 
-    a.r = 0.44;
-    assert(color_is_valid(&a) == true);
+    c.r = 0.44;
+    assert(color_is_valid(&c) == true);
 
-    a.r = -2.03;
-    assert(color_is_valid(&a) == false);
+    c.r = -2.03;
+    assert(color_is_valid(&c) == false);
 
-    a.r = 0.22;
-    assert(color_is_valid(&a) == true);
+    c.r = 0.22;
+    assert(color_is_valid(&c) == true);
 
-    a.g = 1.01;
-    assert(color_is_valid(&a) == false);
+    c.g = 1.01;
+    assert(color_is_valid(&c) == false);
 
-    a.g = 0.44;
-    assert(color_is_valid(&a) == true);
+    c.g = 0.44;
+    assert(color_is_valid(&c) == true);
 
-    a.g = -2.03;
-    assert(color_is_valid(&a) == false);
+    c.g = -2.03;
+    assert(color_is_valid(&c) == false);
 
-    a.g = 0.22;
-    assert(color_is_valid(&a) == true);
+    c.g = 0.22;
+    assert(color_is_valid(&c) == true);
 
-    a.b = 1.01;
-    assert(color_is_valid(&a) == false);
+    c.b = 1.01;
+    assert(color_is_valid(&c) == false);
 
-    a.b = 0.44;
-    assert(color_is_valid(&a) == true);
+    c.b = 0.44;
+    assert(color_is_valid(&c) == true);
 
-    a.b = -2.03;
-    assert(color_is_valid(&a) == false);
+    c.b = -2.03;
+    assert(color_is_valid(&c) == false);
 
-    a.b = 0.22;
-    assert(color_is_valid(&a) == true);
+    c.b = 0.22;
+    assert(color_is_valid(&c) == true);
 
-    a.a = 1.01;
-    assert(color_is_valid(&a) == false);
+    c.a = 1.01;
+    assert(color_is_valid(&c) == false);
 
-    a.a = 0.44;
-    assert(color_is_valid(&a) == true);
+    c.a = 0.44;
+    assert(color_is_valid(&c) == true);
 
-    a.a = -2.03;
-    assert(color_is_valid(&a) == false);
+    c.a = -2.03;
+    assert(color_is_valid(&c) == false);
 
-    a.a = 0.22;
-    assert(color_is_valid(&a) == true);
+    c.a = 0.22;
+    assert(color_is_valid(&c) == true);
   }
 
   {

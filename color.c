@@ -13,14 +13,14 @@ color_rgb(
   assert(g >= 0 && g <= 1);
   assert(b >= 0 && b <= 1);
 
-  color  new_color;
+  color  new_c;
 
-  new_color.r = r;
-  new_color.g = g;
-  new_color.b = b;
-  new_color.a = 1;
+  new_c.r = r;
+  new_c.g = g;
+  new_c.b = b;
+  new_c.a = 1;
 
-  return new_color;
+  return new_c;
 }
 
 color
@@ -35,14 +35,14 @@ color_rgba(
   assert(b >= 0 && b <= 1);
   assert(a >= 0 && a <= 1);
 
-  color  new_color;
+  color  new_c;
 
-  new_color.r = r;
-  new_color.g = g;
-  new_color.b = b;
-  new_color.a = a;
+  new_c.r = r;
+  new_c.g = g;
+  new_c.b = b;
+  new_c.a = a;
 
-  return new_color;
+  return new_c;
 }
 
 

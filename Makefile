@@ -6,6 +6,10 @@ COLOR_SRC_C = color.c
 COLOR_SRC_H = color.h
 COLOR_SRC = $(COLOR_SRC_C) $(COLOR_SRC_H)
 
+RECTANGLE_SRC_C = rectangle.c
+RECTANGLE_SRC_H = rectangle.h
+RECTANGLE_SRC = $(RECTANGLE_SRC_C) $(RECTANGLE_SRC_H)
+
 IMAGE_SRC_C = image.c
 IMAGE_SRC_H = image.h
 IMAGE_SRC = $(IMAGE_SRC_C) $(IMAGE_SRC_H)
@@ -15,8 +19,8 @@ DRIVER_SRC_H = driver.h
 DRIVER_SRC = $(DRIVER_SRC_C) $(DRIVER_SRC_H)
 DRIVER_LIB = -lglut
 
-SRC = $(UTILS_SRC) $(COLOR_SRC) $(IMAGE_SRC) $(DRIVER_SRC)
-LIB = $(UTILS_LIB) $(COLOR_LIB) $(IMAGE_LIB) $(DRIVER_LIB)
+SRC = $(UTILS_SRC) $(COLOR_SRC) $(RECTANGLE_SRC) $(IMAGE_SRC) $(DRIVER_SRC)
+LIB = $(UTILS_LIB) $(COLOR_LIB) $(RECTANGLE_LIB) $(IMAGE_LIB) $(DRIVER_LIB)
 
 test-utils: dirs $(UTILS_SRC) test_utils.c
 	gcc -g -Wall -o ./out/test/utils -DCPU $(UTILS_SRC_C) test_utils.c
@@ -26,19 +30,24 @@ test-color: dirs $(COLOR_SRC) test_color.c
 	gcc -g -Wall -o ./out/test/color -DCPU $(COLOR_SRC_C) test_color.c
 	valgrind --leak-check=full ./out/test/color
 
+test-rectangle: dirs $(RECTANGLE_SRC) test_rectangle.c
+	gcc -g -Wall -o ./out/test/rectangle -DCPU $(RECTANGLE_SRC_C) test_rectangle.c
+	valgrind --leak-check=full ./out/test/rectangle
+
 test-image: dirs $(UTILS_SRC) $(COLOR_SRC) $(IMAGE_SRC) test_image.c
 	gcc -g -Wall -o ./out/test/image -DCPU $(UTILS_SRC_C) $(COLOR_SRC_C) $(IMAGE_SRC_C) test_image.c
 	valgrind --leak-check=full ./out/test/image
 
-test-driver: dirs $(UTILS_SRC) $(COLOR_SRC) $(DRIVER_SRC) test_driver.c
+test-driver: dirs $(UTILS_SRC) $(COLOR_SRC) $(RECTANGLE_SRC) $(DRIVER_SRC) test_driver.c
 	gcc -g -Wall -o ./out/test/driver -DCPU $(DRIVER_LIB) $(UTILS_SRC_C) $(COLOR_SRC_C) $(DRIVER_SRC_C) test_driver.c
-	./out/test/driver
+	valgrind --leak-check=full ./out/test/driver
 
 dist: dirs $(SRC)
 	mkdir -p ./out/dist
 	gcc -g -Wall -shared -Wl,-soname,libsnt.so -o ./out/dist/libsnt.so $(LIB) $(SRC)
 	cp utils.h ./out/dist
 	cp color.h ./out/dist
+	cp rectangle.h ./out/dist
 	cp image.h ./out/dist
 	cp driver.h ./out/dist
 

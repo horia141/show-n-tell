@@ -158,5 +158,26 @@ main(
     assert(_test3_data.c == 10);
   }
 
+  {
+    driver*  drv;
+    image*   texture;
+    quad*    quad;
+
+    drv = driver_make(test4_init_cb,test4_display_cb,test4_frame_cb,250);
+    texture = image_blank(16,16,(color){1,0,1,1});
+    quad = quad_make(drv,(rectangle){0.22,0.11,0.44,0.52},(color){1,1,1,1},texture);
+
+    assert(image_is_valid(texture));
+    assert(quad_is_valid(quad));
+
+    test4.quad = quad;
+
+    driver_start(drv);
+
+    driver_free(quad);
+    driver_free(texture);
+    driver_Free(drv);
+  }
+
   return 0;
 }

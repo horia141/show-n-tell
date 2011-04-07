@@ -1,7 +1,7 @@
 #ifndef _COLOR_H
 #define _COLOR_H
 
-#include <stdbool.h>
+#include "utils.h"
 
 typedef struct _color  color;
 
