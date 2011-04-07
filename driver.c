@@ -176,6 +176,7 @@ driver_start(
     drv->running = true;
     glutTimerFunc(drv->ms_per_frame,_glut_frame_cb,0);
     glutShowWindow();
+    glutFullScreen();
     glutMainLoop();
   } else {
     drv->running = false;
