@@ -49,6 +49,8 @@ _visuals_frame_cb()
 
     if (next != 0) {
       glutTimerFunc(_visuals_s.ms_per_frame,_visuals_frame_cb,0);
+    } else {
+      glutDestroyWindow(_visuals_s.w_id);
     }
   }
 }
