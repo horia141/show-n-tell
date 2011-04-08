@@ -253,7 +253,8 @@ _driver_display(
       work_rows = image_get_rows(iter->texture);
       work_cols = image_get_cols(iter->texture);
       work_texture = image_make_texture(iter->texture);
-      glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,work_rows,work_cols,0,GL_RGBA,GL_FLOAT,work_texture);
+      glBindTexture(GL_TEXTURE_2D,iter->tid);
+      glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,work_cols,work_rows,0,GL_RGBA,GL_FLOAT,work_texture);
       free(work_texture);
 
       iter->dirty = false;
@@ -493,8 +494,8 @@ tquad_texture_get(
   int col)
 {
   assert(tquad_is_valid(tq));
-  assert(row > 0 && row < image_get_rows(tq->texture));
-  assert(col > 0 && col < image_get_cols(tq->texture));
+  assert(row >= 0 && row < image_get_rows(tq->texture));
+  assert(col >= 0 && col < image_get_cols(tq->texture));
 
   return image_get(tq->texture,row,col);
 }
@@ -507,8 +508,8 @@ tquad_texture_set(
   const color* c)
 {
   assert(tquad_is_valid(tq));
-  assert(row > 0 && row < image_get_rows(tq->texture));
-  assert(col > 0 && col < image_get_cols(tq->texture));
+  assert(row >= 0 && row < image_get_rows(tq->texture));
+  assert(col >= 0 && col < image_get_cols(tq->texture));
   assert(color_is_valid(c));
 
   tq->dirty = true;
