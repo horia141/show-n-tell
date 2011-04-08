@@ -10,12 +10,14 @@ test1_frame_cb()
 }
 
 static struct {
-  int     curr_iteration;
-  tquad*  tq3;
-  tquad*  tq4;
-  float   reds[];
+  int      curr_iteration;
+  driver*  drv;
+  tquad*   tq3;
+  tquad*   tq4;
+  float    reds[];
 } _test2_data = {
   .curr_iteration = 0,
+  .drv = NULL,
   .tq3 = NULL,
   .tq4 = NULL,
   .reds = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
@@ -32,6 +34,13 @@ test2_frame_cb()
 		      _test2_data.curr_iteration / 5,
 		      _test2_data.curr_iteration % 5,
 		      &(color){_test2_data.reds[_test2_data.curr_iteration],0,0,1});
+
+    if (_test2_data.curr_iteration == 4) {
+      tquad*  tqp;
+
+      tqp = driver_tquad_make_color(_test2_data.drv,&(rectangle){0,0.13,0.14,0.22},4,4,&(color){0,1,0,1});
+      assert(tquad_is_valid(tqp));
+    }
 
     _test2_data.curr_iteration += 1;
 
@@ -76,6 +85,7 @@ main(
     tq3 = driver_tquad_make_image(drv,&(rectangle){0,0,0.2,0.2},texture);
     tq4 = driver_tquad_make_color(drv,&(rectangle){0.5,0.5,0.22,0.22},2,5,&(color){1,1,1,1});
 
+    _test2_data.drv = drv;
     _test2_data.tq3 = tq3;
     _test2_data.tq4 = tq4;
 

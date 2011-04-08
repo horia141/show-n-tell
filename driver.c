@@ -1,5 +1,6 @@
 #include <setjmp.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -10,6 +11,12 @@
 static void  _glut_display_cb();
 static void  _glut_frame_cb();
 static void  _glut_start(driver* drv);
+
+static void  _driver_init(driver* drv);
+static void  _driver_display(driver* drv);
+static int   _driver_frame(driver* drv);
+static void  _driver_init_tquad(driver* drv, tquad* tquad);
+static void  _driver_clean_tquad(driver* drv, tquad* tquad);
 
 struct _driver
 {
@@ -216,6 +223,76 @@ driver_start(
   return drv;
 }
 
+static void
+_driver_init_tquad(
+  driver* drv,
+  tquad* tq)
+{
+  assert(driver_is_valid(drv));
+  assert(tquad_is_valid(tq));
+  assert(tq->drv == drv);
+  assert(tq->dirty);
+  assert(tq->tid == 0);
+
+  glGenTextures(1,&tq->tid);
+  glBindTexture(GL_TEXTURE_2D,tq->tid);
+  glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+}
+
+static void
+_driver_clean_tquad(
+  driver* drv,
+  tquad* tq)
+{
+  assert(driver_is_valid(drv));
+  assert(tquad_is_valid(tq));
+  assert(tq->drv == drv);
+  assert(tq->dirty);
+  assert(tq->tid > 0);
+
+  float*  work_texture;
+  int     rows;
+  int     cols;
+
+  rows = image_get_rows(tq->texture);
+  cols = image_get_cols(tq->texture);
+  work_texture = image_make_texture(tq->texture);
+  glBindTexture(GL_TEXTURE_2D,tq->tid);
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,cols,rows,0,GL_RGBA,GL_FLOAT,work_texture);
+  free(work_texture);
+
+  tq->dirty = false;
+}
+
+static void
+_driver_init(
+  driver* drv)
+{
+  assert(driver_is_valid(drv));
+
+  tquad*  iter;
+
+  iter = drv->quads->next;
+
+  while (iter != drv->quads->prev) {
+    if (iter->dirty) {
+      if (iter->tid == 0) {
+	_driver_init_tquad(drv,iter);
+      }
+
+      _driver_clean_tquad(drv,iter);
+    }
+
+    fprintf(stderr,"Init: %d\n",iter->tid);
+    iter = iter->next;
+  }
+}
+
 
 static void
 _driver_display(
@@ -224,9 +301,6 @@ _driver_display(
   assert(driver_is_valid(drv));
 
   tquad*  iter;
-  float*  work_texture;
-  int     work_rows;
-  int     work_cols;
 
   glClearColor(0,0,0,0);
   glLoadIdentity();
@@ -240,24 +314,12 @@ _driver_display(
   while (iter != drv->quads->prev) {
     if (iter->dirty) {
       if (iter->tid == 0) {
-	glGenTextures(1,&iter->tid);
-	glBindTexture(GL_TEXTURE_2D,iter->tid);
-	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+	_driver_init_tquad(drv,iter);
       }
 
-      work_rows = image_get_rows(iter->texture);
-      work_cols = image_get_cols(iter->texture);
-      work_texture = image_make_texture(iter->texture);
-      glBindTexture(GL_TEXTURE_2D,iter->tid);
-      glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,work_cols,work_rows,0,GL_RGBA,GL_FLOAT,work_texture);
-      free(work_texture);
+      _driver_clean_tquad(drv,iter);
 
-      iter->dirty = false;
+      fprintf(stderr,"Display: %d\n",iter->tid);
     }
 
     glBindTexture(GL_TEXTURE_2D,iter->tid);
@@ -592,6 +654,8 @@ _glut_start(
 
     glutDisplayFunc(_glut_display_cb);
   }
+
+  _driver_init(drv);
 
   jmp_ret = setjmp(_glut_state.return_env);
     
