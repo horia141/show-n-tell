@@ -70,6 +70,9 @@ bool
 image_is_valid(
   const image* img)
 {
+  int  i;
+  int  j;
+
   if (img == NULL) {
     return false;
   }
@@ -80,6 +83,12 @@ image_is_valid(
 
   if (img->cols < 1) {
     return false;
+  }
+
+  for (i = 0; i < img->rows; i++) {
+    for (j = 0; j < img->cols; j++) {
+      if (!color_is_valid(&img->data[i * img->cols + j]));
+    }
   }
 
   return true;

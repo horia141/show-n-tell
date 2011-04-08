@@ -66,7 +66,7 @@ main(
     tquad*   tq4;
     int      i;
 
-    drv = driver_make(test2_frame_cb,1000);
+    drv = driver_make(test2_frame_cb,400);
 
     assert(driver_is_valid(drv));
 
