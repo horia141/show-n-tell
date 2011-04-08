@@ -13,8 +13,9 @@ struct _color
   float  a;
 };
 
-color   color_rgb(float r, float g, float b);
-color   color_rgba(float r, float g, float b, float a);
+color   color_make_rgb(float r, float g, float b);
+color   color_make_rgba(float r, float g, float b, float a);
+void    color_free(color* c);
 
 bool    color_is_valid(const color* c);
 

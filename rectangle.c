@@ -1,7 +1,7 @@
 #include "rectangle.h"
 
 rectangle
-rectangle_xywh(
+rectangle_make_xywh(
   float x,
   float y,
   float w,
@@ -21,7 +21,7 @@ rectangle_xywh(
 }
 
 rectangle
-rectangle_tlbr(
+rectangle_make_tlbr(
   float tl_x,
   float tl_y,
   float br_x,
@@ -38,6 +38,18 @@ rectangle_tlbr(
   new_r.h = br_y - tl_y;
 
   return new_r;
+}
+
+void
+rectangle_free(
+  rectangle* r)
+{
+  assert(rectangle_is_valid(r));
+
+  r->x = 0;
+  r->y = 0;
+  r->w = -1;
+  r->h = -1;
 }
 
 

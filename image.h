@@ -6,7 +6,7 @@
 
 typedef struct _image image;
 
-image*        image_blank(int rows, int cols, color c);
+image*        image_make_blank(int rows, int cols, const color* c);
 void          image_free(image* img);
 
 bool          image_is_valid(const image* img);
@@ -22,7 +22,7 @@ int           image_get_cols(const image* img);
 const color*  image_get_pixels(const image* img);
 color*        image_get_pixels_a(image* img);
 color         image_get(const image* img, int row, int col);
-void          image_set(image* img, int row, int col, const color c);
+void          image_set(image* img, int row, int col, const color* c);
 
 image*        image_from_ppm_t(const char* ppm_path);
 void          image_print_t(const image* img);

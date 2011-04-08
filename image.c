@@ -12,14 +12,14 @@ struct _image
 };
 
 image*
-image_blank(
+image_make_blank(
   int rows,
   int cols,
-  color c)
+  const color* c)
 {
   assert(rows > 0);
   assert(cols > 0);
-  assert(color_is_valid(&c));
+  assert(color_is_valid(c));
 
   image*  new_img;
   int     i;
@@ -32,10 +32,10 @@ image_blank(
 
   for (i = 0; i < rows; i++) {
     for (j = 0; j < cols; j++) {
-      new_img->data[i * cols + j].r = c.r;
-      new_img->data[i * cols + j].g = c.g;
-      new_img->data[i * cols + j].b = c.b;
-      new_img->data[i * cols + j].a = c.a;
+      new_img->data[i * cols + j].r = c->r;
+      new_img->data[i * cols + j].g = c->g;
+      new_img->data[i * cols + j].b = c->b;
+      new_img->data[i * cols + j].a = c->a;
     }
   }
 		   
@@ -48,12 +48,22 @@ image_free(
 {
   assert(image_is_valid(img));
 
+  #ifndef _NDEBUG
+  int  i;
+  int  j;
+
+  for (i = 0; i < img->rows; i++) {
+    for (j = 0; j < img->cols; j++) {
+      color_free(&img->data[i * img->cols + j]);
+    }
+  }
+  #endif
+
   img->rows = -1;
   img->cols = -1;
 
   free(img);
 }
-
 
 
 bool
@@ -218,17 +228,17 @@ image_set(
   image* img,
   int row,
   int col,
-  color c)
+  const color* c)
 {
   assert(image_is_valid(img));
   assert(row >= 0 && row < img->rows);
   assert(col >= 0 && col < img->cols);
-  assert(color_is_valid(&c));
+  assert(color_is_valid(c));
 
-  img->data[row * img->cols + col].r = c.r;
-  img->data[row * img->cols + col].g = c.g;
-  img->data[row * img->cols + col].b = c.b;
-  img->data[row * img->cols + col].a = c.a;
+  img->data[row * img->cols + col].r = c->r;
+  img->data[row * img->cols + col].g = c->g;
+  img->data[row * img->cols + col].b = c->b;
+  img->data[row * img->cols + col].a = c->a;
 }
 
 
@@ -264,12 +274,12 @@ image_from_ppm_t(
   fscanf(ppm_file,"%d %d",&width,&height);
   fscanf(ppm_file,"%*d");
 
-  new_img = image_blank(height,width,(color){0,0,0,1});
+  new_img = image_make_blank(height,width,&(color){0,0,0,1});
 
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
       fscanf(ppm_file,"%d %d %d",&color_r,&color_g,&color_b);
-      image_set(new_img,i,j,(color){color_r/(float)255,color_g/(float)255,color_b/(float)255,1});
+      image_set(new_img,i,j,&(color){color_r/(float)255,color_g/(float)255,color_b/(float)255,1});
     }
   }
 

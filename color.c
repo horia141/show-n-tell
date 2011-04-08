@@ -4,7 +4,7 @@
 #include "utils.h"
 
 color
-color_rgb(
+color_make_rgb(
   float r,
   float g,
   float b)
@@ -24,7 +24,7 @@ color_rgb(
 }
 
 color
-color_rgba(
+color_make_rgba(
   float r,
   float g,
   float b,
@@ -43,6 +43,18 @@ color_rgba(
   new_c.a = a;
 
   return new_c;
+}
+
+void
+color_free(
+  color* c)
+{
+  assert(color_is_valid(c));
+
+  c->r = -1;
+  c->g = -1;
+  c->b = -1;
+  c->a = -1;
 }
 
 

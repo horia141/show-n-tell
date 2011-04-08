@@ -1,182 +1,67 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-
 #include "driver.h"
 
-static struct {
-  int  a;
-  int  b;
-} _test1_data;
-
-void
-test1_init_cb()
-{
-  _test1_data.a = 10;
-}
-
-void
-test1_display_cb()
-{
-  _test1_data.b = 20;
-}
-
-int
+static int
 test1_frame_cb()
 {
   return 0;
 }
 
-
 static struct {
-  int  a;
-  int  b;
-  int  c;
-} _test2_data;
+  int  curr_iteration
+} _test2_data = {
+  .curr_iteration = 0
+};
 
-void
-test2_init_cb()
-{
-  _test2_data.a = 10;
-}
-
-void
-test2_display_cb()
-{
-  _test2_data.b = 20;
-  glBegin(GL_QUADS);
-  glColor3f(_test2_data.c / 10.0,0,0);
-  glVertex2f(-1,-1);
-  glVertex2f(-1,1);
-  glVertex2f(1,1);
-  glVertex2f(1,-1);
-  glEnd();
-}
-
-int
+static int
 test2_frame_cb()
 {
-  if (_test2_data.c < 10) {
-    _test2_data.c += 1;
+  if (_test2_data.curr_iteration < 10) {
+    _test2_data.curr_iteration += 1;
     return 1;
   } else {
     return 0;
   }
 }
-
-
-static struct {
-  int  a;
-  int  b;
-  int  c;
-} _test3_data;
-
-void
-test3_init_cb()
-{
-  _test3_data.a += 5;
-}
-
-void
-test3_display_cb()
-{
-  _test3_data.b = 20;
-  glBegin(GL_QUADS);
-  glColor3f(_test3_data.c / 10.0,0,0);
-  glVertex2f(-1,-1);
-  glVertex2f(-1,1);
-  glVertex2f(1,1);
-  glVertex2f(1,-1);
-  glEnd();
-}
-
-int
-test3_frame_cb()
-{
-  if (_test3_data.c < 5) {
-    _test3_data.c += 1;
-    return 1;
-  } else if (_test3_data.c == 5) {
-    _test3_data.c = 6;
-    return 0;
-  } else if (_test3_data.c > 5 && _test3_data.c < 10) {
-    _test3_data.c += 1;
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 
 int
 main(
-   int argc,
-   char** argv)
+  int argc,
+  char** argv)
 {
   {
     driver*  drv;
 
-    drv = driver_make(test1_init_cb,test1_display_cb,test1_frame_cb,100);
+    drv = driver_make(test1_frame_cb,10);
 
-    driver_start(drv,argc,argv);
+    assert(driver_is_valid(drv));
+
+    driver_start(drv);
     driver_free(drv);
-
-    assert(_test1_data.a == 10);
-    assert(_test1_data.b == 20);
-  }
-
-  {
-    driver*  drv;
-
-    drv = driver_make(test2_init_cb,test2_display_cb,test2_frame_cb,250);
-
-    driver_start(drv,argc,argv);
-    driver_free(drv);
-
-    assert(_test2_data.a == 10);
-    assert(_test2_data.b == 20);
-    assert(_test2_data.c == 10);
-  }
-
-  {
-    driver*  drv1;
-    driver*  drv2;
-
-    drv1 = driver_make(test3_init_cb,test3_display_cb,test3_frame_cb,250);
-    drv2 = driver_make(test3_init_cb,test3_display_cb,test3_frame_cb,250);
-
-    driver_start(drv1,argc,argv);
-    driver_start(drv2,argc,argv);
-
-    driver_free(drv1);
-    driver_free(drv2);
-
-    assert(_test3_data.a == 10);
-    assert(_test3_data.b == 20);
-    assert(_test3_data.c == 10);
   }
 
   {
     driver*  drv;
     image*   texture;
-    quad*    quad;
+    tquad*   tq1;
+    tquad*   tq2;
 
-    drv = driver_make(test4_init_cb,test4_display_cb,test4_frame_cb,250);
-    texture = image_blank(16,16,(color){1,0,1,1});
-    quad = quad_make(drv,(rectangle){0.22,0.11,0.44,0.52},(color){1,1,1,1},texture);
+    drv = driver_make(test2_frame_cb,250);
 
-    assert(image_is_valid(texture));
-    assert(quad_is_valid(quad));
+    assert(driver_is_valid(drv));
 
-    test4.quad = quad;
+    texture = image_from_ppm_t("test_driver.ppm");
+    tq1 = driver_tquad_make_color(drv,&(rectangle){0.22,0.44,0.11,0.11},4,4,&(color){1,0,0,1});
+    tq2 = driver_tquad_make_image(drv,&(rectangle){0.54,0.82,0.11,0.10},texture);
 
+    assert(tquad_is_valid(tq1));
+    assert(tquad_is_valid(tq2));
+
+    image_free(texture);
     driver_start(drv);
-
-    driver_free(quad);
-    driver_free(texture);
-    driver_Free(drv);
+    driver_free(drv);
   }
 
   return 0;
