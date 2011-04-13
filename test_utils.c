@@ -8,6 +8,14 @@ main(
   int argc,
   char** argv)
 {
+  assert (max_n(10,23) == 23);
+  assert (max_n(32,13) == 32);
+  assert (max_n(10,12) != 10);
+
+  assert (min_n(10,23) == 10);
+  assert (min_n(32,13) == 13);
+  assert (min_n(10,12) != 12);
+
   assert (max_f(1.0,2.3) == 2.3f);
   assert (max_f(1.0,1.0001) == 1.0001f);
   assert (max_f(3.2,1.3) == 3.2f);

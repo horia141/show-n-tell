@@ -40,6 +40,27 @@ main(
   }
 
   {
+    rectangle  r1;
+    rectangle  r2;
+
+    r1 = rectangle_make_xywh(1,1,2,2);
+    r2 = rectangle_make_copy(&r1);
+
+    assert(r1.x == 1);
+    assert(r1.y == 1);
+    assert(r1.w == 2);
+    assert(r1.h == 2);
+
+    assert(r2.x == r1.x);
+    assert(r2.y == r1.y);
+    assert(r2.w == r1.w);
+    assert(r2.h == r1.h);
+
+    rectangle_free(&r1);
+    rectangle_free(&r2);
+  }
+
+  {
     rectangle  r;
 
     r = rectangle_make_xywh(1,3,2,0.2);
@@ -62,26 +83,26 @@ main(
   }
 
   {
-    rectangle  a;
-    rectangle  b;
+    rectangle  r1;
+    rectangle  r2;
 
-    a = rectangle_make_xywh(4,4,3,2);
-    b = rectangle_make_tlbr(3,4,7,5);
+    r1 = rectangle_make_xywh(4,4,3,2);
+    r2 = rectangle_make_tlbr(3,4,7,5);
 
-    rectangle_copy(&a,&b);
+    rectangle_overwrite(&r1,&r2);
 
-    assert(a.x == 3);
-    assert(a.y == 4);
-    assert(a.w == 4);
-    assert(a.h == 1);
+    assert(r1.x == 3);
+    assert(r1.y == 4);
+    assert(r1.w == 4);
+    assert(r1.h == 1);
 
-    assert(a.x == b.x);
-    assert(a.y == b.y);
-    assert(a.w == b.w);
-    assert(a.h == b.h);
+    assert(r1.x == r2.x);
+    assert(r1.y == r2.y);
+    assert(r1.w == r2.w);
+    assert(r1.h == r2.h);
 
-    rectangle_free(&a);
-    rectangle_free(&b);
+    rectangle_free(&r1);
+    rectangle_free(&r2);
   }
 
   return 0;

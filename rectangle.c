@@ -40,6 +40,22 @@ rectangle_make_tlbr(
   return new_r;
 }
 
+rectangle
+rectangle_make_copy(
+  const rectangle* r)
+{
+  assert(rectangle_is_valid(r));
+
+  rectangle  new_r;
+
+  new_r.x = r->x;
+  new_r.y = r->y;
+  new_r.w = r->w;
+  new_r.h = r->h;
+
+  return new_r;
+}
+
 void
 rectangle_free(
   rectangle* r)
@@ -70,7 +86,7 @@ rectangle_is_valid(
 
 
 rectangle*
-rectangle_copy(
+rectangle_overwrite(
   rectangle* dst,
   const rectangle* src)
 {

@@ -45,6 +45,22 @@ color_make_rgba(
   return new_c;
 }
 
+color
+color_make_copy(
+  const color* c)
+{
+  assert(color_is_valid(c));
+
+  color  new_c;
+
+  new_c.r = c->r;
+  new_c.g = c->g;
+  new_c.b = c->b;
+  new_c.a = c->a;
+
+  return new_c;
+}
+
 void
 color_free(
   color* c)
@@ -86,8 +102,20 @@ color_is_valid(
 }
 
 
+bool
+color_equal(
+  const color* c1,
+  const color* c2)
+{
+  assert(color_is_valid(c1));
+  assert(color_is_valid(c2));
+
+  return c1->r == c2->r && c1->g == c2->g && c1->b == c2->b && c1->a == c2->a;
+}
+
+
 color*
-color_copy(
+color_overwrite(
   color* dst,
   const color* src)
 {

@@ -6,6 +6,8 @@
 
 #define EPS 1e-5
 
+int    max_n(int a, int b);
+int    min_n(int a, int b);
 #ifdef CPU
 float  max_f(float a, float b);
 float  min_f(float a, float b);

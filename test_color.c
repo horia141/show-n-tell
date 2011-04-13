@@ -40,6 +40,28 @@ main(
   }
 
   {
+    color  c1;
+    color  c2;
+    
+    c1 = color_make_rgba(0,1,0,1);
+    c2 = color_make_copy(&c1);
+
+    assert(c1.r == 0);
+    assert(c1.g == 1);
+    assert(c1.b == 0);
+    assert(c1.a == 1);
+
+    assert(c2.r == c1.r);
+    assert(c2.g == c1.g);
+    assert(c2.b == c1.b);
+    assert(c2.a == c1.a);
+
+    color_free(&c1);
+    color_free(&c2);
+  }
+    
+
+  {
     color  c;
 
     c = color_make_rgba(0,0.11,0.73,0.88);
@@ -98,43 +120,64 @@ main(
   }
 
   {
-    color  a;
-    color  b;
+    color  c1;
+    color  c2;
+    color  c3;
+    color  c4;
 
-    a = color_make_rgb(1,0,1);
-    b = color_make_rgba(0.1,0.2,0.3,0.4);
+    c1 = color_make_rgba(1,0,0,1);
+    c2 = color_make_rgba(1,0,0,1);
+    c3 = color_make_rgba(1,1,0,0);
+    c4 = color_make_copy(&c3);
 
-    color_copy(&a,&b);
+    assert(color_equal(&c1,&c2));
+    assert(!color_equal(&c1,&c3));
+    assert(color_equal(&c3,&c4));
 
-    assert(a.r == 0.1f);
-    assert(a.g == 0.2f);
-    assert(a.b == 0.3f);
-    assert(a.a == 0.4f);
-
-    assert(a.r == b.r);
-    assert(a.g == b.g);
-    assert(a.b == b.b);
-    assert(a.a == b.a);
-
-    color_free(&a);
-    color_free(&b);
+    color_free(&c1);
+    color_free(&c2);
+    color_free(&c3);
+    color_free(&c4);
   }
 
   {
-    color a;
-    color b;
+    color  c1;
+    color  c2;
 
-    a = color_make_rgba(1,0,1,0);
-    b = color_make_rgba(0,1,0,1);
+    c1 = color_make_rgb(1,0,1);
+    c2 = color_make_rgba(0.1,0.2,0.3,0.4);
 
-    assert(color_distance(&a,&b) == 4);
+    color_overwrite(&c1,&c2);
 
-    color_copy(&a,&b);
+    assert(c1.r == 0.1f);
+    assert(c1.g == 0.2f);
+    assert(c1.b == 0.3f);
+    assert(c1.a == 0.4f);
 
-    assert(color_distance(&a,&b) == 0);
+    assert(c1.r == c2.r);
+    assert(c1.g == c2.g);
+    assert(c1.b == c2.b);
+    assert(c1.a == c2.a);
 
-    color_free(&a);
-    color_free(&b);
+    color_free(&c1);
+    color_free(&c2);
+  }
+
+  {
+    color c1;
+    color c2;
+
+    c1 = color_make_rgba(1,0,1,0);
+    c2 = color_make_rgba(0,1,0,1);
+
+    assert(color_distance(&c1,&c2) == 4);
+
+    color_overwrite(&c1,&c2);
+
+    assert(color_distance(&c1,&c2) == 0);
+
+    color_free(&c1);
+    color_free(&c2);
   }
 
   return 0;

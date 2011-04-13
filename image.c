@@ -42,6 +42,19 @@ image_make_blank(
   return new_img;
 }
 
+image*
+image_make_copy(
+  const image* src)
+{
+  assert(image_is_valid(src));
+
+  image*  new_img;
+
+  new_img = image_make_blank(src->rows,src->cols,&(color){0,0,0,1});
+
+  return image_overwrite(new_img,src);
+}
+
 void
 image_free(
   image* img)
@@ -123,7 +136,7 @@ image_equal(
 
 
 image*
-image_copy(
+image_overwrite(
   image* dst,
   const image* src)
 {
@@ -137,7 +150,7 @@ image_copy(
 
   for (i = 0; i < dst->rows; i++) {
     for (j = 0; j < dst->cols; j++) {
-      color_copy(&dst->data[i * dst->cols + j],&src->data[i * dst->cols + j]);
+      color_overwrite(&dst->data[i * dst->cols + j],&src->data[i * dst->cols + j]);
     }
   }
 
@@ -165,17 +178,17 @@ image_make_texture_a(
   assert(image_is_valid(img));
   assert(texture != NULL);
 
-  color   tmp;
-  int     i;
-  int     j;
+  const color*  tmp;
+  int           i;
+  int           j;
 
   for (i = 0; i < img->rows; i++) {
     for (j = 0; j < img->cols; j++) {
       tmp = image_get(img,i,j);
-      texture[(img->rows - i - 1) * img->cols * 4 + j * 4 + 0] = tmp.r;
-      texture[(img->rows - i - 1) * img->cols * 4 + j * 4 + 1] = tmp.g;
-      texture[(img->rows - i - 1) * img->cols * 4 + j * 4 + 2] = tmp.b;
-      texture[(img->rows - i - 1) * img->cols * 4 + j * 4 + 3] = tmp.a;
+      texture[(img->rows - i - 1) * img->cols * 4 + j * 4 + 0] = tmp->r;
+      texture[(img->rows - i - 1) * img->cols * 4 + j * 4 + 1] = tmp->g;
+      texture[(img->rows - i - 1) * img->cols * 4 + j * 4 + 2] = tmp->b;
+      texture[(img->rows - i - 1) * img->cols * 4 + j * 4 + 3] = tmp->a;
     }
   }
 
@@ -219,7 +232,7 @@ image_get_pixels_a(
   return img->data;
 }
 
-color
+const color*
 image_get(
   const image* img,
   int row,
@@ -229,7 +242,7 @@ image_get(
   assert(row >= 0 && row < img->rows);
   assert(col >= 0 && col < img->cols);
 
-  return img->data[row * img->cols + col];
+  return &img->data[row * img->cols + col];
 }
 
 void
@@ -265,6 +278,7 @@ image_from_ppm_t(
   char*   text_line;
   int     width;
   int     height;
+  int     maximum;
   int     color_r;
   int     color_g;
   int     color_b;
@@ -281,14 +295,14 @@ image_from_ppm_t(
   memset(text_line,0,TEXT_LINE_MAX_SIZE);
   fgets(text_line,TEXT_LINE_MAX_SIZE,ppm_file);
   fscanf(ppm_file,"%d %d",&width,&height);
-  fscanf(ppm_file,"%*d");
+  fscanf(ppm_file,"%d",&maximum);
 
   new_img = image_make_blank(height,width,&(color){0,0,0,1});
 
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
       fscanf(ppm_file,"%d %d %d",&color_r,&color_g,&color_b);
-      image_set(new_img,i,j,&(color){color_r/(float)255,color_g/(float)255,color_b/(float)255,1});
+      image_set(new_img,i,j,&(color){color_r/(float)maximum,color_g/(float)maximum,color_b/(float)maximum,1});
     }
   }
 

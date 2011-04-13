@@ -1,6 +1,5 @@
 #include <setjmp.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -29,6 +28,7 @@ struct _driver
 struct _tquad
 {
   const driver*  drv;
+  bool           show;
   bool           dirty;
   rectangle      geometry;
   image*         texture;
@@ -57,6 +57,7 @@ driver_make(
   new_drv->quad_cnt = 0;
   new_drv->quads = malloc(sizeof(tquad));
   new_drv->quads->drv = new_drv;
+  new_drv->quads->show = false;
   new_drv->quads->dirty = false;
   new_drv->quads->geometry = rectangle_make_xywh(0,0,1,1);
   new_drv->quads->texture = NULL;
@@ -64,6 +65,7 @@ driver_make(
   new_drv->quads->next = malloc(sizeof(tquad));
   new_drv->quads->prev = new_drv->quads->next;
   new_drv->quads->prev->drv = new_drv;
+  new_drv->quads->prev->show = false;
   new_drv->quads->prev->dirty = false;
   new_drv->quads->prev->geometry = rectangle_make_xywh(0,0,1,1);
   new_drv->quads->prev->texture = NULL;
@@ -85,6 +87,7 @@ driver_free(
   }
 
   drv->quads->prev->drv = NULL;
+  drv->quads->prev->show = false;
   drv->quads->prev->dirty = false;
   rectangle_free(&drv->quads->prev->geometry);
   drv->quads->prev->texture = NULL;
@@ -95,6 +98,7 @@ driver_free(
   free(drv->quads->next);
 
   drv->quads->drv = NULL;
+  drv->quads->show = false;
   drv->quads->dirty = false;
   rectangle_free(&drv->quads->geometry);
   drv->quads->texture = NULL;
@@ -140,6 +144,10 @@ driver_is_valid(
     return false;
   }
 
+  if (drv->quads->show == true) {
+    return false;
+  }
+
   if (drv->quads->dirty == true) {
     return false;
   }
@@ -165,6 +173,10 @@ driver_is_valid(
   }
 
   if (drv->quads->prev->drv != drv) {
+    return false;
+  }
+
+  if (drv->quads->prev->show == true) {
     return false;
   }
 
@@ -231,6 +243,8 @@ _driver_init_tquad(
   assert(driver_is_valid(drv));
   assert(tquad_is_valid(tq));
   assert(tq->drv == drv);
+  assert(drv->quads != tq);
+  assert(drv->quads->prev != tq);
   assert(tq->dirty);
   assert(tq->tid == 0);
 
@@ -252,6 +266,8 @@ _driver_clean_tquad(
   assert(driver_is_valid(drv));
   assert(tquad_is_valid(tq));
   assert(tq->drv == drv);
+  assert(drv->quads != tq);
+  assert(drv->quads->prev != tq);
   assert(tq->dirty);
   assert(tq->tid > 0);
 
@@ -288,7 +304,6 @@ _driver_init(
       _driver_clean_tquad(drv,iter);
     }
 
-    fprintf(stderr,"Init: %d\n",iter->tid);
     iter = iter->next;
   }
 }
@@ -318,23 +333,23 @@ _driver_display(
       }
 
       _driver_clean_tquad(drv,iter);
-
-      fprintf(stderr,"Display: %d\n",iter->tid);
     }
 
-    glBindTexture(GL_TEXTURE_2D,iter->tid);
+    if (iter->show) {
+      glBindTexture(GL_TEXTURE_2D,iter->tid);
 
-    glBegin(GL_QUADS);
-    glColor3f(1,1,1);
-    glTexCoord2f(0,1);
-    glVertex2f(iter->geometry.x,iter->geometry.y);
-    glTexCoord2f(1,1);
-    glVertex2f(iter->geometry.x + iter->geometry.w,iter->geometry.y);
-    glTexCoord2f(1,0);
-    glVertex2f(iter->geometry.x + iter->geometry.w,iter->geometry.y + iter->geometry.h);
-    glTexCoord2f(0,0);
-    glVertex2f(iter->geometry.x,iter->geometry.y + iter->geometry.h);
-    glEnd();
+      glBegin(GL_QUADS);
+      glColor3f(1,1,1);
+      glTexCoord2f(0,1);
+      glVertex2f(iter->geometry.x,iter->geometry.y);
+      glTexCoord2f(1,1);
+      glVertex2f(iter->geometry.x + iter->geometry.w,iter->geometry.y);
+      glTexCoord2f(1,0);
+      glVertex2f(iter->geometry.x + iter->geometry.w,iter->geometry.y + iter->geometry.h);
+      glTexCoord2f(0,0);
+      glVertex2f(iter->geometry.x,iter->geometry.y + iter->geometry.h);
+      glEnd();
+    }
     
     iter = iter->next;
   }
@@ -373,6 +388,7 @@ driver_tquad_make_color(
   new_tq = malloc(sizeof(tquad));
 
   new_tq->drv = drv;
+  new_tq->show = true;
   new_tq->dirty = true;
   new_tq->geometry = *geometry;
   new_tq->texture = image_make_blank(rows,cols,color);
@@ -401,9 +417,23 @@ driver_tquad_make_image(
 
   new_tq = driver_tquad_make_color(drv,geometry,image_get_rows(texture),image_get_cols(texture),&(color){0,0,0,1});
 
-  image_copy(new_tq->texture,texture);
+  image_overwrite(new_tq->texture,texture);
 
   return new_tq;
+}
+
+tquad*
+driver_tquad_make_copy(
+  driver* drv,
+  const tquad* tq)
+{
+  assert(driver_is_valid(drv));
+  assert(tquad_is_valid(tq));
+  assert(tq->drv == drv);
+  assert(drv->quads != tq);
+  assert(drv->quads->prev != tq);
+
+  return driver_tquad_make_image(drv,&tq->geometry,tq->texture);
 }
 
 void
@@ -421,6 +451,7 @@ driver_tquad_free(
   tq->prev->next = tq->next;
 
   tq->drv = NULL;
+  tq->show = false;
   tq->dirty = false;
   rectangle_free(&tq->geometry);
   image_free(tq->texture);
@@ -531,13 +562,46 @@ tquad_resize_by(
   return tq;
 }
 
-rectangle
+tquad*
+tquad_show(
+  tquad* tq)
+{
+  assert(tquad_is_valid(tq));
+
+  tq->show = true;
+
+  return tq;
+}
+
+tquad*
+tquad_hide(
+  tquad* tq)
+{
+  assert(tquad_is_valid(tq));
+
+  tq->show = false;
+  
+  return tq;
+}
+
+tquad*
+tquad_visiflip(
+  tquad* tq)
+{
+  assert(tquad_is_valid(tq));
+
+  tq->show = !tq->show;
+
+  return tq;
+}
+
+const rectangle*
 tquad_get_rectangle(
   const tquad* tq)
 {
   assert(tquad_is_valid(tq));
 
-  return tq->geometry;
+  return &tq->geometry;
 }
 
 const image*
@@ -549,7 +613,7 @@ tquad_get_texture(
   return tq->texture;
 }
 
-color
+const color*
 tquad_texture_get(
   const tquad* tq,
   int row,

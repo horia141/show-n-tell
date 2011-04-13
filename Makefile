@@ -42,9 +42,18 @@ test-driver: dirs $(UTILS_SRC) $(COLOR_SRC) $(RECTANGLE_SRC) $(IMAGE_SR) $(DRIVE
 	gcc -g -Wall -o ./out/test/driver -DCPU $(DRIVER_LIB) $(UTILS_SRC_C) $(COLOR_SRC_C) $(RECTANGLE_SRC_C) $(IMAGE_SRC_C) $(DRIVER_SRC_C) test_driver.c
 	valgrind --leak-check=full ./out/test/driver
 
-dist: dirs $(SRC)
+dist-debug: dirs $(SRC)
 	mkdir -p ./out/dist
-	gcc -g -Wall -shared -Wl,-soname,libsnt.so -o ./out/dist/libsnt.so $(LIB) $(SRC)
+	gcc -g -Wall -shared -Wl,-soname,libsnt.debug.so -o ./out/dist/libsnt.debug.so $(LIB) $(SRC)
+	cp utils.h ./out/dist
+	cp color.h ./out/dist
+	cp rectangle.h ./out/dist
+	cp image.h ./out/dist
+	cp driver.h ./out/dist
+
+dist-final: dirs $(SRC)
+	mkdir -p ./out/dist
+	gcc -O2 -DNDEBUG -Wall -shared -Wl,-soname,libsnt.so -o ./out/dist/libsnt.so $(LIB) $(SRC)
 	cp utils.h ./out/dist
 	cp color.h ./out/dist
 	cp rectangle.h ./out/dist
