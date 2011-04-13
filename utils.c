@@ -26,7 +26,6 @@ min_n(
   }
 }
 
-#ifdef CPU
 float
 max_f(
   float a,
@@ -50,7 +49,6 @@ min_f(
     return b;
   }
 }
-#endif
 
 int
 clamp_i(

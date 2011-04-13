@@ -8,10 +8,8 @@
 
 int    max_n(int a, int b);
 int    min_n(int a, int b);
-#ifdef CPU
 float  max_f(float a, float b);
 float  min_f(float a, float b);
-#endif
 int    clamp_i(int x, int min, int max);
 float  clamp_f(float x, float min, float max);
 int    unirandom_i(int beg, int end);
