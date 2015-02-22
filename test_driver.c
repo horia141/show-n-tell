@@ -29,6 +29,10 @@ static int
 test2_frame_cb()
 {
   if (_test2_data.curr_iteration < 10) {
+    driver_set_title(_test2_data.drv,"Iteration %d",_test2_data.curr_iteration);
+    driver_move_by(_test2_data.drv,10,10);
+    driver_resize_by(_test2_data.drv,-10,-10);
+
     tquad_move_by(_test2_data.tq3,0.1,0.1);
     tquad_resize_by(_test2_data.tq3,-0.01,-0.01);
 
@@ -64,7 +68,7 @@ main(
   {
     driver*  drv;
 
-    drv = driver_make(test1_frame_cb,10);
+    drv = driver_make(test1_frame_cb,"Test 1",&(rectangle){0,0,200,200},10);
 
     assert(driver_is_valid(drv));
 
@@ -82,7 +86,7 @@ main(
     tquad*   tq5;
     int      i;
 
-    drv = driver_make(test2_frame_cb,400);
+    drv = driver_make(test2_frame_cb,"Test 2",&(rectangle){100,100,600,600},400);
 
     assert(driver_is_valid(drv));
 

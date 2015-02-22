@@ -1,5 +1,7 @@
 #include <setjmp.h>
+#include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -20,6 +22,8 @@ static void  _driver_clean_tquad(driver* drv, tquad* tquad);
 struct _driver
 {
   driver_frame_cb  frame_cb;
+  char*            title;
+  rectangle        geometry;
   int              ms_per_frame;
   int              quad_cnt;
   tquad*           quads;
@@ -44,8 +48,13 @@ static int   _driver_frame(driver* drv);
 driver*
 driver_make(
   driver_frame_cb frame_cb,
+  const char* title,
+  const rectangle* geometry,
   int ms_per_frame)
 {
+  assert(title != NULL && title[0] != '\0');
+  assert(rectangle_is_valid(geometry));
+  assert(geometry->x >= 0 && geometry->y >= 0);
   assert(ms_per_frame > 0);
 
   driver*  new_drv;
@@ -53,6 +62,8 @@ driver_make(
   new_drv = malloc(sizeof(driver));
 
   new_drv->frame_cb = frame_cb;
+  new_drv->title = strdup(title);
+  new_drv->geometry = *geometry;
   new_drv->ms_per_frame = ms_per_frame;
   new_drv->quad_cnt = 0;
   new_drv->quads = malloc(sizeof(tquad));
@@ -107,8 +118,11 @@ driver_free(
   drv->quads->prev = NULL;
 
   free(drv->quads);
+  free(drv->title);
+  rectangle_free(&drv->geometry);
 
   drv->frame_cb = NULL;
+  drv->title = NULL;
   drv->ms_per_frame = -1;
   drv->quad_cnt = -1;
   drv->quads = NULL;
@@ -125,6 +139,18 @@ driver_is_valid(
   int           count;
 
   if (drv == NULL) {
+    return false;
+  }
+
+  if (drv->title == NULL || drv->title[0] == '\0') {
+    return false;
+  }
+
+  if (!rectangle_is_valid(&drv->geometry)) {
+    return false;
+  }
+
+  if (drv->geometry.x < 0 || drv->geometry.y < 0) {
     return false;
   }
 
@@ -317,6 +343,10 @@ _driver_display(
 
   tquad*  iter;
 
+  glutSetWindowTitle(drv->title);
+  glutPositionWindow(drv->geometry.x,drv->geometry.y);
+  glutReshapeWindow(drv->geometry.w,drv->geometry.h);
+
   glClearColor(0,0,0,0);
   glLoadIdentity();
   glOrtho(-1,1,-1,1,-1,1);
@@ -466,6 +496,89 @@ driver_tquad_free(
 }
 
 
+const char*
+driver_get_title(
+  const driver* drv)
+{
+  assert(driver_is_valid(drv));
+
+  return drv->title;
+}
+
+void
+driver_set_title(
+  driver* drv,
+  const char* format,
+  ...)
+{
+  assert(driver_is_valid(drv));
+  assert(format != NULL && format[0] != '\0');
+
+  va_list  args;
+
+  free(drv->title);
+  va_start(args,format);
+  vasprintf(&drv->title,format,args);
+  va_end(args);
+}
+
+void
+driver_move_to(
+  driver* drv,
+  float x,
+  float y)
+{
+  assert(driver_is_valid(drv));
+  assert(x >= 0);
+  assert(y >= 0);
+
+  drv->geometry.x = x;
+  drv->geometry.y = y;
+}
+
+void
+driver_move_by(
+  driver* drv,
+  float x,
+  float y)
+{
+  assert(driver_is_valid(drv));
+  assert(drv->geometry.x + x >= 0);
+  assert(drv->geometry.y + y >= 0);
+
+  drv->geometry.x = drv->geometry.x + x;
+  drv->geometry.y = drv->geometry.y + y;
+}
+
+void
+driver_resize_to(
+  driver* drv,
+  float w,
+  float h)
+{
+  assert(driver_is_valid(drv));
+  assert(w > 0);
+  assert(h > 0);
+
+  drv->geometry.w = w;
+  drv->geometry.h = h;
+}
+
+void
+driver_resize_by(
+  driver* drv,
+  float w,
+  float h)
+{
+  assert(driver_is_valid(drv));
+  assert(drv->geometry.w + w > 0);
+  assert(drv->geometry.h + h > 0);
+
+  drv->geometry.w = drv->geometry.w + w;
+  drv->geometry.h = drv->geometry.h + h;
+}
+
+
 bool
 tquad_is_valid(
   const tquad* tq)
@@ -502,7 +615,21 @@ tquad_is_valid(
 }
 
 
-tquad*
+void
+tquad_update_texture(
+  tquad* tq,
+  const image* img)
+{
+  assert(tquad_is_valid(tq));
+  assert(image_is_valid(img));
+  assert(image_get_rows(tq->texture) == image_get_rows(img));
+  assert(image_get_cols(tq->texture) == image_get_cols(img));
+
+  image_overwrite(tq->texture,img);
+  tq->dirty = true;
+}
+
+void
 tquad_move_to(
   tquad* tq,
   float x,
@@ -512,11 +639,9 @@ tquad_move_to(
 
   tq->geometry.x = x;
   tq->geometry.y = y;
-
-  return tq;
 }
 
-tquad*
+void
 tquad_move_by(
   tquad* tq,
   float dx,
@@ -526,11 +651,9 @@ tquad_move_by(
 
   tq->geometry.x = tq->geometry.x + dx;
   tq->geometry.y = tq->geometry.y + dy;
-
-  return tq;
 }
 
-tquad*
+void
 tquad_resize_to(
   tquad* tq,
   float w,
@@ -542,11 +665,9 @@ tquad_resize_to(
 
   tq->geometry.w = w;
   tq->geometry.h = h;
-
-  return tq;
 }
 
-tquad*
+void
 tquad_resize_by(
   tquad* tq,
   float dw,
@@ -558,41 +679,33 @@ tquad_resize_by(
 
   tq->geometry.w = tq->geometry.w + dw;
   tq->geometry.h = tq->geometry.h + dh;
-
-  return tq;
 }
 
-tquad*
+void
 tquad_show(
   tquad* tq)
 {
   assert(tquad_is_valid(tq));
 
   tq->show = true;
-
-  return tq;
 }
 
-tquad*
+void
 tquad_hide(
   tquad* tq)
 {
   assert(tquad_is_valid(tq));
 
   tq->show = false;
-  
-  return tq;
 }
 
-tquad*
+void
 tquad_visiflip(
   tquad* tq)
 {
   assert(tquad_is_valid(tq));
 
   tq->show = !tq->show;
-
-  return tq;
 }
 
 const rectangle*
@@ -709,12 +822,12 @@ _glut_start(
     free(argv);
 
     glutInitDisplayMode(GLUT_RGBA|GLUT_DOUBLE);
-    glutInitWindowSize(500,500);
-    glutInitWindowPosition(100,100);
+    glutInitWindowSize(drv->geometry.w,drv->geometry.h);
+    glutInitWindowPosition(drv->geometry.x,drv->geometry.y);
 
     _glut_state.started = true;
     _glut_state.drv = drv;
-    _glut_state.w_id = glutCreateWindow("ShowNTell");
+    _glut_state.w_id = glutCreateWindow(drv->title);
 
     glutDisplayFunc(_glut_display_cb);
   }
